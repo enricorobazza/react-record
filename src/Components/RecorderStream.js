@@ -1,29 +1,21 @@
 import React, { Component } from 'react';
 import RecorderJS from 'recorder-js';
-import ReactAudioPlayer from 'react-audio-player';
-import socketIOClient from "socket.io-client";
 
 import { getAudioStream, exportBuffer } from '../utilities/audio';
 
-class Recorder extends Component {
-
+class RecorderStream extends Component {
   constructor(props) {
     super(props);
     this.state = {
       stream: null,
       recording: false,
-      recorder: null,
-      blob: null,
-      socket: null
+      recorder: null
     };
     this.startRecord = this.startRecord.bind(this);
     this.stopRecord = this.stopRecord.bind(this);
   }
 
   async componentDidMount() {
-    const socket = socketIOClient("http://192.168.0.31:8000");
-    this.setState({socket});
-
     let stream;
 
     try {
@@ -37,7 +29,7 @@ class Recorder extends Component {
     this.setState({ stream });
   }
 
-  startRecord() {
+  startRecord(){
     const { stream } = this.state;
 
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -45,33 +37,40 @@ class Recorder extends Component {
     recorder.init(stream);
 
     this.setState(
-      {
-        recorder,
-        recording: true
-      },
-      () => {
-        recorder.start();
-      }
-    );
+        {
+          recorder,
+          recording: true
+        },
+        () => {
+          this.record();
+        }
+      );
   }
+
+  record(){
+      const {recorder} = this.state;
+      recorder.start();
+      var interval = setInterval(()=>{
+        recorder.stop().then((response)=>{
+            if(this.state.recording) {
+                console.log(response.blob);
+                //RecorderJS.download(response.blob, 'my-audio-file');
+                recorder.start();
+            }
+            else clearInterval(interval);
+        });
+      }, 1000);
+  }
+
 
   async stopRecord() {
     const { recorder } = this.state;
-
+    
     const { blob, buffer } = await recorder.stop()
-    //const audio = exportBuffer(buffer[0]);
-
-    // Process the audio here.
-    //console.log(audio);
     console.log(blob);
-    //RecorderJS.download(blob, 'my-audio-file');
-
-    const {socket} = this.state;
-    socket.emit('audioSend', blob);
 
     this.setState({
-      recording: false,
-      blob: window.URL.createObjectURL(blob)
+      recording: false
     });
   }
 
@@ -84,7 +83,6 @@ class Recorder extends Component {
     }
 
     return (
-      <>
       <button
         onClick={() => {
           recording ? this.stopRecord() : this.startRecord();
@@ -92,15 +90,8 @@ class Recorder extends Component {
         >
         {recording ? 'Stop Recording' : 'Start Recording'}
       </button>
-
-      <ReactAudioPlayer
-        src={this.state.blob}
-        controls
-      />
-
-      </>
     );
   }
 }
 
-export default Recorder;
+export default RecorderStream;
