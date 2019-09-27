@@ -27,19 +27,18 @@ export default class Listener extends Component {
   render() {
     return (
         <>
-            <div> textInComponent </div>
-            <button onClick={(event)=>{
-                    event.preventDefault();
-                    const {socket} = this.state;
-                    socket.emit('audioSend', 'mymessage');
-            }}>ENVIAR</button>
+            {this.state.blob ? <h1>Listen to Audio:</h1> : <h1>Waiting for Audio.</h1>}
             <br />
-            <ReactAudioPlayer
+            {this.state.blob && <ReactAudioPlayer
                 src={this.state.blob}
                 controls
-                autoplay
-                onCanPlay={()=>{alert('loaded');}}
-            />
+                autoplay = {true}
+                onCanPlay={(event)=>{
+                    event.target.play();
+                    //alert('loaded');
+                    //console.log(event.target);
+                }}
+            />}
       </>
     );
   }
