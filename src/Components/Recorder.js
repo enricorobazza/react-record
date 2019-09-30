@@ -21,7 +21,7 @@ class Recorder extends Component {
   }
 
   async componentDidMount() {
-    const socket = socketIOClient("http://192.168.0.31:8000");
+    const socket = socketIOClient("http://192.168.1.154:8000");
     this.setState({socket});
 
     let stream;
