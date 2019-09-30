@@ -54,7 +54,7 @@ export default class Listener extends Component {
       const source = audioContext.createBufferSource();
       source.buffer = newaudioBuffer;
 
-      // console.log(newaudioBuffer);
+      console.log(newaudioBuffer);
 
       source.connect(audioContext.destination);
       source.start(source.buffer.duration);
