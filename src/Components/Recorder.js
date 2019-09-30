@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import RecorderJS from 'recorder-js';
 import ReactAudioPlayer from 'react-audio-player';
 import socketIOClient from "socket.io-client";
+import WaveStream from 'react-wave-stream';
 
 import { getAudioStream, exportBuffer } from '../utilities/audio';
 
@@ -14,7 +15,8 @@ class Recorder extends Component {
       recording: false,
       recorder: null,
       blob: null,
-      socket: null
+      socket: null,
+      analyserData: {data: [], lineTo: 0},
     };
     this.startRecord = this.startRecord.bind(this);
     this.stopRecord = this.stopRecord.bind(this);
@@ -41,7 +43,9 @@ class Recorder extends Component {
     const { stream } = this.state;
 
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const recorder = new RecorderJS(audioContext);
+    const recorder = new RecorderJS(audioContext, {
+      onAnalysed: data => this.setState({analyserData: data})
+    });
     recorder.init(stream);
 
     this.setState(
@@ -65,6 +69,8 @@ class Recorder extends Component {
     //console.log(audio);
     console.log(blob);
     //RecorderJS.download(blob, 'my-audio-file');
+
+    console.log(this.state.analyserData);
 
     const {socket} = this.state;
     socket.emit('audioSend', blob);
@@ -98,6 +104,9 @@ class Recorder extends Component {
         src={this.state.blob}
         controls
       />
+      <br />
+      <br />
+      <WaveStream {...this.state.analyserData} />
 
       </>
     );

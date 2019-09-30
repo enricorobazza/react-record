@@ -3,14 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "react": "^16.6.0",
+    "react": "next",
     "react-audio-player": "^0.11.1",
-    "react-dom": "^16.6.0",
+    "react-dom": "next",
     "react-hot-loader": "^4.12.14",
     "react-router-dom": "^5.1.0",
     "react-scripts": "2.0.5",
+    "react-wave-stream": "^1.0.0",
     "recorder-js": "^1.0.7",
-    "socket.io-client": "^2.3.0"
+    "socket.io-client": "^2.3.0",
+    "socket.io-stream": "^0.9.1"
   },
   "scripts": {
     "start": "react-scripts start",
