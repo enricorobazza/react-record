@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import ReactAudioPlayer from 'react-audio-player';
 import socketIOClient from "socket.io-client";
 import {withWaveHeader, appendBuffer} from '../utilities/recorder/utilities';
+import {IP} from '../config';
 
 export default class Listener extends Component {
 
@@ -15,7 +16,7 @@ export default class Listener extends Component {
       }
 
     async componentDidMount() {
-        const socket = socketIOClient("http://192.168.1.154:8000");
+        const socket = socketIOClient(IP);
         this.setState({socket});
 
         socket.on('audioSend', message => {
@@ -44,7 +45,8 @@ export default class Listener extends Component {
 
       // console.log(data);
 
-      const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 44100));
+      const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 4096));
+      // const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 44100));
 
       // console.log(audioBufferChunk);
 

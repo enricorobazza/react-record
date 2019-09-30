@@ -1,0 +1,1 @@
+export const IP = "http://172.20.17.180:8000";

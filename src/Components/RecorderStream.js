@@ -4,7 +4,7 @@ import Recorder from '../utilities/recorder';
 import socketIOClient from "socket.io-client";
 import AudioSupport from '../utilities/recorder/audio-support';
 import ReactAudioPlayer from 'react-audio-player';
-
+import {IP} from '../config';
 import {withWaveHeader, appendBuffer} from '../utilities/recorder/utilities';
 
 // import { getAudioStream, exportBuffer } from '../utilities/audio';
@@ -26,7 +26,7 @@ class RecorderStream extends Component {
 
   async componentDidMount() {
     // let stream;
-    const socket = socketIOClient("http://192.168.1.154:8000");
+    const socket = socketIOClient(IP);
     this.setState({socket});
 
     // try {
@@ -124,6 +124,7 @@ class RecorderStream extends Component {
         const audioContext = this.getAudioContext();
         // get mic stream
         const source = audioContext.createMediaStreamSource( stream );
+        // const scriptNode = audioContext.createScriptProcessor(49252, 1, 1);
         const scriptNode = audioContext.createScriptProcessor(4096, 1, 1);
         source.connect(scriptNode);
         scriptNode.connect(audioContext.destination);
