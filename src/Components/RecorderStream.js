@@ -134,9 +134,10 @@ class RecorderStream extends Component {
         // on process event
         scriptNode.onaudioprocess = (e) => {
           // get mica data
-        //   console.log(e.inputBuffer.getChannelData(0))
+          console.log(e.inputBuffer.getChannelData(0));
           const {socket} = this.state;
-          socket.emit('audioSend', e.inputBuffer.getChannelData(0));
+          var data = JSON.stringify(e.inputBuffer.getChannelData(0));
+          socket.emit('audioSend', data);
           // this.play(e.inputBuffer.getChannelData(0));
         };
     }, console.log);

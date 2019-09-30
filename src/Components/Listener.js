@@ -40,10 +40,32 @@ export default class Listener extends Component {
         });
     }
 
+   copyArray(data, sampleRate){
+     var array = [];
+     for(var i=0;i<sampleRate;i++){
+      //  console.log("abc");
+      //  console.log(data[i]);
+       array.push(data[i]);
+     }
+     return array;
+   }
+
     play = async (data) =>{
       const audioContext = this.getAudioContext();
 
-      // console.log(data);
+      var array = JSON.parse(data);
+      var newArray = this.copyArray(array, 4096);
+      var array32 = new Float32Array(newArray);
+      // console.log(array32);
+
+      var buffer = new ArrayBuffer(array32.byteLength);
+      // var buffer = new ArrayBuffer(newArray.byteLength);
+
+      var byteView = new Uint8Array(buffer);
+
+      console.log(byteView);
+      
+      return;
 
       const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 4096));
       // const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 44100));
@@ -56,7 +78,7 @@ export default class Listener extends Component {
       const source = audioContext.createBufferSource();
       source.buffer = newaudioBuffer;
 
-      console.log(newaudioBuffer);
+      // console.log(newaudioBuffer);
 
       source.connect(audioContext.destination);
       source.start(source.buffer.duration);

@@ -1,8 +1,8 @@
 const concat = (buffer1, buffer2) => {
     const tmp = new Float32Array(buffer1.byteLength + buffer2.byteLength);
 
-    console.log(buffer1);
-    console.log(buffer2);
+    // console.log(buffer1);
+    // console.log(buffer2);
   
     tmp.set(new Float32Array(buffer1), 0);
     tmp.set(new Float32Array(buffer2), buffer1.byteLength);
@@ -20,7 +20,6 @@ const concat = (buffer1, buffer2) => {
     }
     return tmp;
   };
-  
   
   const withWaveHeader = (data, numberOfChannels, sampleRate) => {
     const header = new ArrayBuffer(44);
