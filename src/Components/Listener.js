@@ -3,6 +3,7 @@ import ReactAudioPlayer from 'react-audio-player';
 import socketIOClient from "socket.io-client";
 import {withWaveHeader, appendBuffer} from '../utilities/recorder/utilities';
 import {IP} from '../config';
+import {encodeWAV} from '../utilities/newUtilities';
 
 export default class Listener extends Component {
 
@@ -11,7 +12,8 @@ export default class Listener extends Component {
         this.state = {
           socket: null,
           blob: [],
-          blobIndex: -1
+          blobIndex: -1,
+          audioContext: null
         };
       }
 
@@ -51,23 +53,20 @@ export default class Listener extends Component {
    }
 
     play = async (data) =>{
-      const audioContext = this.getAudioContext();
+      // const audioContext = this.getAudioContext();
+      if(this.state.audioContext == null) return;
+
+      const {audioContext} = this.state;
 
       var array = JSON.parse(data);
       var newArray = this.copyArray(array, 4096);
       var array32 = new Float32Array(newArray);
       // console.log(array32);
 
-      var buffer = new ArrayBuffer(array32.byteLength);
-      // var buffer = new ArrayBuffer(newArray.byteLength);
+      // return;
 
-      var byteView = new Uint8Array(buffer);
-
-      console.log(byteView);
-      
-      return;
-
-      const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 4096));
+      const audioBufferChunk = await audioContext.decodeAudioData(encodeWAV(array32, 2, 4096));
+      // const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 4096));
       // const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 44100));
 
       // console.log(audioBufferChunk);
@@ -95,6 +94,11 @@ export default class Listener extends Component {
     return (
         <>
             {this.state.blobIndex >= 0 ? <h1>Listen to Audio:</h1> : <h1>Waiting for Audio.</h1>}
+            <br />
+            <button onClick={()=>{
+              var audioContext = this.getAudioContext();
+              this.setState({audioContext:audioContext});
+            }}>Start Listening</button>
             <br />
             {this.state.blobIndex >= 0 && <ReactAudioPlayer
                 src={this.state.blob[this.state.blobIndex]}

@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
-import RecorderJS from 'recorder-js';
+// import RecorderJS from 'recorder-js';
+import RecorderJS from '../utilities/recorder/';
 import ReactAudioPlayer from 'react-audio-player';
 import socketIOClient from "socket.io-client";
 import WaveStream from 'react-wave-stream';
+import {IP} from '../config';
 
 import { getAudioStream, exportBuffer } from '../utilities/audio';
 
@@ -23,7 +25,7 @@ class Recorder extends Component {
   }
 
   async componentDidMount() {
-    const socket = socketIOClient("http://192.168.0.31:8000");
+    const socket = socketIOClient(IP);
     this.setState({socket});
 
     let stream;
@@ -67,10 +69,10 @@ class Recorder extends Component {
 
     // Process the audio here.
     //console.log(audio);
-    console.log(blob);
+    // console.log(blob);
     //RecorderJS.download(blob, 'my-audio-file');
 
-    console.log(this.state.analyserData);
+    // console.log(this.state.analyserData);
 
     const {socket} = this.state;
     socket.emit('audioSend', blob);

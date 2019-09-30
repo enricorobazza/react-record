@@ -117,9 +117,9 @@ class Microphone {
         } else {
           interleaved = buffers[0];
         }
-        console.log(interleaved);
+        console.log("Interleaved", interleaved);
         let dataview = encodeWAV(interleaved);
-        console.log(dataview);
+        console.log("Dataview", dataview);
         let audioBlob = new Blob([dataview], {type: type});
 
         this.postMessage({command: 'exportWAV', data: audioBlob});
