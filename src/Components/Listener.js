@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import ReactAudioPlayer from 'react-audio-player';
 import socketIOClient from "socket.io-client";
+import { IP } from '../config';
 
 export default class Listener extends Component {
 
@@ -13,7 +14,7 @@ export default class Listener extends Component {
       }
 
     async componentDidMount() {
-        const socket = socketIOClient("http://192.168.1.154:8000");
+        const socket = socketIOClient(IP);
         this.setState({socket});
 
         socket.on('audioSend', message => {
