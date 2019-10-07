@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import ReactAudioPlayer from 'react-audio-player';
 import socketIOClient from "socket.io-client";
 import { IP } from '../config';
+import styled from 'styled-components';
 
 export default class Listener extends Component {
 
@@ -9,9 +10,24 @@ export default class Listener extends Component {
         super(props);
         this.state = {
           socket: null,
-          blob: null
+          blob: null,
         };
       }
+
+
+    Background = styled.div`
+      background-color:#3498db;
+      width: 100vw;
+      height: 100vh;
+      display:flex;
+      padding: 30px;
+      box-sizing: border-box;
+      flex-direction:column;
+    `;
+
+    Title = styled.h1`
+      color: #fff;
+    `;
 
     async componentDidMount() {
         const socket = socketIOClient(IP);
@@ -28,8 +44,9 @@ export default class Listener extends Component {
   render() {
     return (
         <>
-            {this.state.blob ? <h1>Listen to Audio:</h1> : <h1>Waiting for Audio.</h1>}
-            <br />
+            <this.Background>
+            {this.state.blob ? <this.Title>Listen to Audio:</this.Title> : <this.Title>Waiting for Audio.</this.Title>}
+            <br /><br />
             {this.state.blob && <ReactAudioPlayer
                 src={this.state.blob}
                 controls
@@ -40,6 +57,7 @@ export default class Listener extends Component {
                     //console.log(event.target);
                 }}
             />}
+            </this.Background>
       </>
     );
   }

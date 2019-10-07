@@ -3,11 +3,36 @@ import RecorderJS from 'recorder-js';
 import ReactAudioPlayer from 'react-audio-player';
 import socketIOClient from "socket.io-client";
 import { IP } from '../config';
+import styled from 'styled-components';
 
 
 import { getAudioStream, exportBuffer } from '../utilities/audio';
 
 class Recorder extends Component {
+
+  Background = styled.div`
+    background-color: #1abc9c;
+    width: 100vw;
+    height: 100vh;
+    display:flex;
+    padding: 30px;
+    box-sizing: border-box;
+    flex-direction:column;
+    align-items: center;
+  `;
+
+  Title = styled.h1`
+      color: #fff;
+    `;
+
+  Button = styled.button`
+    border: none;
+    padding: 15px 120px;
+    background-color: #2c3e50;
+    color: #fff;
+    border-radius: 10px;
+  `;
+
 
   constructor(props) {
     super(props);
@@ -87,20 +112,22 @@ class Recorder extends Component {
 
     return (
       <>
-      <button
-        onClick={() => {
-          recording ? this.stopRecord() : this.startRecord();
-        }}
-        >
-        {recording ? 'Stop Recording' : 'Start Recording'}
-      </button>
-        <br />
-        <br />
-      <ReactAudioPlayer
-        src={this.state.blob}
-        controls
-      />
-
+      <this.Background>
+        <this.Title>Welcome to Hear Me Talk!</this.Title>
+        <this.Button
+          onClick={() => {
+            recording ? this.stopRecord() : this.startRecord();
+          }}
+          >
+          {recording ? 'Stop Recording' : 'Start Recording'}
+        </this.Button>
+          <br />
+          <br />
+        <ReactAudioPlayer
+          src={this.state.blob}
+          controls
+        />
+      </this.Background>
       </>
     );
   }
