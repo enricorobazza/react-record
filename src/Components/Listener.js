@@ -7,13 +7,16 @@ import {encodeWAV} from '../utilities/newUtilities';
 
 export default class Listener extends Component {
 
+    source = null;
+
     constructor(props) {
         super(props);
         this.state = {
           socket: null,
           blob: [],
           blobIndex: -1,
-          audioContext: null
+          audioContext: null,
+          source: null
         };
       }
 
@@ -59,28 +62,33 @@ export default class Listener extends Component {
       const {audioContext} = this.state;
 
       var array = JSON.parse(data);
+      // console.log(array);
       var newArray = this.copyArray(array, 4096);
-      var array32 = new Float32Array(newArray);
+      // var array32 = new Float32Array(newArray);
       // console.log(array32);
 
       // return;
 
-      const audioBufferChunk = await audioContext.decodeAudioData(encodeWAV(array32, 2, 4096));
+      const audioBufferChunk = await audioContext.decodeAudioData(encodeWAV(newArray, 1, 4096));
       // const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 4096));
       // const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 44100));
 
       // console.log(audioBufferChunk);
 
-      const newaudioBuffer = (source && source.buffer)
-          ? appendBuffer(source.buffer, audioBufferChunk, audioContext)
+      if(this.source) console.log(this.source.buffer);
+
+      const newaudioBuffer = (this.source && this.source.buffer)
+          ? appendBuffer(this.source.buffer, audioBufferChunk, audioContext)
           : audioBufferChunk;
-      const source = audioContext.createBufferSource();
-      source.buffer = newaudioBuffer;
+      this.source = audioContext.createBufferSource();
+      this.source.buffer = newaudioBuffer;
 
       // console.log(newaudioBuffer);
 
-      source.connect(audioContext.destination);
-      source.start(source.buffer.duration);
+      this.source.connect(audioContext.destination);
+      this.source.start(this.source.buffer.duration);
+
+      // this.setState({source});
       // console.log(source.buffer.duration);
   }
 

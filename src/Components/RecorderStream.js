@@ -16,6 +16,7 @@ class RecorderStream extends Component {
       stream: null,
       recording: false,
       recorder: null,
+      audioContext: null,
       socket: null,
       blob: new Float32Array(0),
       blobFormatted: null,
@@ -119,9 +120,15 @@ class RecorderStream extends Component {
     return audioContent;
   };
 
+  startRecording(){
+    this.setState({recording:true});
+    if(!this.state.audioContext) this.record();
+  }
+
   record = () =>{
     window.navigator.getUserMedia({ audio:true }, (stream) => {
         const audioContext = this.getAudioContext();
+        this.setState({audioContext});
         // get mic stream
         const source = audioContext.createMediaStreamSource( stream );
         // const scriptNode = audioContext.createScriptProcessor(49252, 1, 1);
@@ -133,14 +140,21 @@ class RecorderStream extends Component {
     
         // on process event
         scriptNode.onaudioprocess = (e) => {
+          if(!this.state.recording) return;
           // get mica data
           console.log(e.inputBuffer.getChannelData(0));
           const {socket} = this.state;
+          console.log(e.inputBuffer);
           var data = JSON.stringify(e.inputBuffer.getChannelData(0));
           socket.emit('audioSend', data);
           // this.play(e.inputBuffer.getChannelData(0));
         };
     }, console.log);
+    
+}
+
+stopRecord = ()=>{
+  this.setState({recording:false});
 }
 
   render() {
@@ -155,10 +169,10 @@ class RecorderStream extends Component {
       <>
       <button
         onClick={() => {
-          this.record();
+          this.state.recording ? this.stopRecord() : this.startRecording();
         }}
         >
-        Start recording
+        {this.state.recording ? "Parar gravação" : "Começar a gravar"}
       </button>
       <br />
       {/* <ReactAudioPlayer
