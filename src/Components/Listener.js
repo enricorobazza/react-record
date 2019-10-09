@@ -4,6 +4,7 @@ import socketIOClient from "socket.io-client";
 import {withWaveHeader, appendBuffer} from '../utilities/recorder/utilities';
 import {IP} from '../config';
 import {encodeWAV} from '../utilities/newUtilities';
+import audioBufferFrom from 'audio-buffer-from';
 
 export default class Listener extends Component {
 
@@ -68,8 +69,11 @@ export default class Listener extends Component {
       // console.log(array32);
 
       // return;
-
-      const audioBufferChunk = await audioContext.decodeAudioData(encodeWAV(newArray, 1, 4096));
+      // const AudioBuffer = audioBufferFrom(data);
+      // console.log(AudioBuffer);
+      // const audioBufferChunk = await audioContext.decodeAudioData(AudioBuffer);
+      const audioBufferChunk = await audioContext.decodeAudioData(encodeWAV(newArray, 1, 44100));
+      // const audioBufferChunk = await audioContext.decodeAudioData(encodeWAV(newArray, 1, 4096));
       // const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 4096));
       // const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 44100));
 
