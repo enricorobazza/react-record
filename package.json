@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "audio-buffer-from": "^1.1.1",
+    "dgram": "^1.0.1",
     "react": "next",
     "react-audio-player": "^0.11.1",
     "react-dom": "next",

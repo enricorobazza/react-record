@@ -4,7 +4,7 @@ import Recorder from '../utilities/recorder';
 import socketIOClient from "socket.io-client";
 import AudioSupport from '../utilities/recorder/audio-support';
 import ReactAudioPlayer from 'react-audio-player';
-import {IP} from '../config';
+import {IP, bufferSize} from '../config';
 import {withWaveHeader, appendBuffer} from '../utilities/recorder/utilities';
 
 // import { getAudioStream, exportBuffer } from '../utilities/audio';
@@ -131,8 +131,7 @@ class RecorderStream extends Component {
         this.setState({audioContext});
         // get mic stream
         const source = audioContext.createMediaStreamSource( stream );
-        // const scriptNode = audioContext.createScriptProcessor(49252, 1, 1);
-        const scriptNode = audioContext.createScriptProcessor(4096, 1, 1);
+        const scriptNode = audioContext.createScriptProcessor(bufferSize, 1, 1);
         source.connect(scriptNode);
         scriptNode.connect(audioContext.destination);
         // output to speaker
@@ -145,7 +144,10 @@ class RecorderStream extends Component {
           // console.log(e.inputBuffer.getChannelData(0));
           const {socket} = this.state;
           // console.log(e.inputBuffer);
-          var data = JSON.stringify(e.inputBuffer.getChannelData(0));
+          let datetime = new Date();
+          console.log(datetime.getTime());
+          // var data = JSON.stringify(e.inputBuffer.getChannelData(0));
+          var data = JSON.stringify( {data: e.inputBuffer.getChannelData(0), time: datetime.getTime()});
           socket.emit('audioSend', data);
           // socket.emit('audioSend', e.inputBuffer.getChannelData(0));
           // this.play(e.inputBuffer.getChannelData(0));

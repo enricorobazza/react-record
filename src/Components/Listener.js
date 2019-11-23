@@ -2,9 +2,8 @@ import React, { Component } from 'react';
 import ReactAudioPlayer from 'react-audio-player';
 import socketIOClient from "socket.io-client";
 import {withWaveHeader, appendBuffer} from '../utilities/recorder/utilities';
-import {IP} from '../config';
+import {IP, bufferSize} from '../config';
 import {encodeWAV} from '../utilities/newUtilities';
-import audioBufferFrom from 'audio-buffer-from';
 
 export default class Listener extends Component {
 
@@ -17,7 +16,9 @@ export default class Listener extends Component {
           blob: [],
           blobIndex: -1,
           audioContext: null,
-          source: null
+          source: null,
+          avgDelay: 0,
+          sampleCount: 0,
         };
       }
 
@@ -26,60 +27,42 @@ export default class Listener extends Component {
         this.setState({socket});
 
         socket.on('audioSend', message => {
-            //alert('received');
-            // console.log(message);
-
+            // console.log(message.time)
             this.play(message);
-
-            // var blob = new Blob([message], {type: 'audio/uav'});
-            // this.setState({blob: [...this.state.blob, window.URL.createObjectURL(blob)]});
-            // if(this.state.blobIndex == -1) this.setState({blobIndex:0});
-
-            // var intervalo = setInterval(()=>{
-            //     console.log(this.state.listening);
-            //     if(!this.state.listening){
-            //         var blob = new Blob([message], {type: 'audio/uav'});
-            //         this.setState({blob: window.URL.createObjectURL(blob), listening: true});
-            //         clearInterval(intervalo);
-            //     }
-            // }, 1000);
         });
     }
 
    copyArray(data, sampleRate){
      var array = [];
      for(var i=0;i<sampleRate;i++){
-      //  console.log("abc");
-      //  console.log(data[i]);
        array.push(data[i]);
      }
      return array;
    }
 
     play = async (data) =>{
-      // const audioContext = this.getAudioContext();
       if(this.state.audioContext == null) return;
 
       const {audioContext} = this.state;
-
+      // console.log(data);
       var array = JSON.parse(data);
-      // console.log(array);
-      var newArray = this.copyArray(array, 4096);
-      // var array32 = new Float32Array(newArray);
-      // console.log(array32);
+      var newArray = this.copyArray(array.data, bufferSize);
 
-      // return;
-      // const AudioBuffer = audioBufferFrom(data);
-      // console.log(AudioBuffer);
-      // const audioBufferChunk = await audioContext.decodeAudioData(AudioBuffer);
+      var datetime = new Date();
+      var prevDateTime = new Date(array.time);
+
+      var delay = Math.abs(datetime - prevDateTime);
+      this.setState({
+        sampleCount: this.state.sampleCount+1, 
+        avgDelay: (this.state.avgDelay * this.state.sampleCount + delay) / (this.state.sampleCount + 1)
+      })
+
+      console.log("Sample count: ", this.state.sampleCount);
+      console.log("Current delay: ", delay);
+      console.log("Avg Delay: ", this.state.avgDelay);
+
+      // console.log(array.time);
       const audioBufferChunk = await audioContext.decodeAudioData(encodeWAV(newArray, 1, 44100));
-      // const audioBufferChunk = await audioContext.decodeAudioData(encodeWAV(newArray, 1, 4096));
-      // const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 4096));
-      // const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 44100));
-
-      // console.log(audioBufferChunk);
-
-      if(this.source) console.log(this.source.buffer);
 
       const newaudioBuffer = (this.source && this.source.buffer)
           ? appendBuffer(this.source.buffer, audioBufferChunk, audioContext)
@@ -87,10 +70,12 @@ export default class Listener extends Component {
       this.source = audioContext.createBufferSource();
       this.source.buffer = newaudioBuffer;
 
-      // console.log(newaudioBuffer);
-
       this.source.connect(audioContext.destination);
-      this.source.start(this.source.buffer.duration);
+      this.source.start(audioBufferChunk.duration, this.source.buffer.duration - audioBufferChunk.duration);
+      // this.source.start(audioBufferChunk.duration*40);
+      // this.source.start(this.source.buffer.duration,audioBufferChunk.duration);
+      // this.source.start(this.source.buffer.duration);
+      // console.log(this.source.buffer.duration);
 
       // this.setState({source});
       // console.log(source.buffer.duration);
