@@ -50,8 +50,10 @@ export default class Listener extends Component {
 
       var datetime = new Date();
       var prevDateTime = new Date(array.time);
+      var prevServerDateTime = new Date(array.stime);
 
       var delay = Math.abs(datetime - prevDateTime);
+      var sDelay = Math.abs(datetime - prevServerDateTime);
       this.setState({
         sampleCount: this.state.sampleCount+1, 
         avgDelay: (this.state.avgDelay * this.state.sampleCount + delay) / (this.state.sampleCount + 1)
@@ -59,7 +61,10 @@ export default class Listener extends Component {
 
       console.log("Sample count: ", this.state.sampleCount);
       console.log("Current delay: ", delay);
+      console.log("Current server delay: ", sDelay);
       console.log("Avg Delay: ", this.state.avgDelay);
+
+      this.state.socket.emit('timeSave', {id: "Enrico", time: delay});
 
       // console.log(array.time);
       const audioBufferChunk = await audioContext.decodeAudioData(encodeWAV(newArray, 1, 44100));
