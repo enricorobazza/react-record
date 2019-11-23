@@ -13,10 +13,12 @@
     "react-wave-stream": "^1.0.0",
     "recorder-js": "^1.0.7",
     "socket.io-client": "^2.3.0",
-    "socket.io-stream": "^0.9.1"
+    "socket.io-stream": "^0.9.1",
+    "styled-components": "^4.4.1"
   },
   "scripts": {
     "start": "react-scripts start",
+    "start_secure": "HTTPS=true react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
