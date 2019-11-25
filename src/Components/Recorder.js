@@ -1,118 +1,82 @@
 import React, { Component } from 'react';
-// import RecorderJS from 'recorder-js';
-import RecorderJS from '../utilities/recorder/';
-import ReactAudioPlayer from 'react-audio-player';
 import socketIOClient from "socket.io-client";
-import WaveStream from 'react-wave-stream';
-import {IP} from '../config';
+import {IP, bufferSize} from '../config';
+import {Background, Input, Title, Button} from './styles';
 
-import { getAudioStream, exportBuffer } from '../utilities/audio';
-
-class Recorder extends Component {
-
+class RecorderStream extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      stream: null,
       recording: false,
-      recorder: null,
-      blob: null,
+      audioContext: null,
       socket: null,
-      analyserData: {data: [], lineTo: 0},
+      username: "",
+      error: ""
     };
-    this.startRecord = this.startRecord.bind(this);
-    this.stopRecord = this.stopRecord.bind(this);
   }
 
   async componentDidMount() {
     const socket = socketIOClient(IP);
     this.setState({socket});
-
-    let stream;
-
-    try {
-      stream = await getAudioStream();
-    } catch (error) {
-      // Users browser doesn't support audio.
-      // Add your handler here.
-      console.log(error);
-    }
-
-    this.setState({ stream });
   }
 
-  startRecord() {
-    const { stream } = this.state;
-
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const recorder = new RecorderJS(audioContext, {
-      onAnalysed: data => this.setState({analyserData: data})
-    });
-    recorder.init(stream);
-
-    this.setState(
-      {
-        recorder,
-        recording: true
-      },
-      () => {
-        recorder.start();
-      }
-    );
+  startRecording(){
+    this.setState({recording:true});
+    if(!this.state.audioContext) this.record();
   }
 
-  async stopRecord() {
-    const { recorder } = this.state;
-
-    const { blob, buffer } = await recorder.stop()
-    //const audio = exportBuffer(buffer[0]);
-
-    // Process the audio here.
-    //console.log(audio);
-    // console.log(blob);
-    //RecorderJS.download(blob, 'my-audio-file');
-
-    // console.log(this.state.analyserData);
-
-    const {socket} = this.state;
-    socket.emit('audioSend', blob);
-
-    this.setState({
-      recording: false,
-      blob: window.URL.createObjectURL(blob)
-    });
+  stopRecord = ()=>{
+    this.setState({recording:false, audioContext:null});
   }
+
+  record = () =>{
+    navigator.mediaDevices.getUserMedia({ audio:true, video: false }).then((stream) => {
+      const audioContext = new AudioContext();
+      this.setState({audioContext});
+
+      // get mic stream
+      const source = audioContext.createMediaStreamSource( stream );
+      const scriptNode = audioContext.createScriptProcessor(bufferSize, 1, 1);
+      source.connect(scriptNode);
+      scriptNode.connect(audioContext.destination);
+  
+      // on process event
+      scriptNode.onaudioprocess = (e) => {
+        if(!this.state.recording) return;
+        const {socket} = this.state;
+        let datetime = new Date();
+        console.log(datetime.getTime());
+        var data =  {data: e.inputBuffer.getChannelData(0), time: datetime.getTime(), username: this.state.username};
+        socket.emit('audioSend', data);
+      };
+  }).catch((err)=>{
+    this.setState({error: err});
+  });
+    
+}
 
   render() {
-    const { recording, stream } = this.state;
-
-    // Don't show record button if their browser doesn't support it.
-    if (!stream) {
-      return null;
-    }
-
     return (
       <>
-      <button
-        onClick={() => {
-          recording ? this.stopRecord() : this.startRecord();
-        }}
-        >
-        {recording ? 'Stop Recording' : 'Start Recording'}
-      </button>
+      <Background background_color={"#1abc9c"}>
+        <Title>Emitir áudio</Title>
+        <Input disabled={this.state.recording} placeholder="Seu nome" value={this.state.username} onChange={(input)=>{
+          this.setState({username: input.target.value});
+        }}/>
+        <Button active_color={"#74b9ff"} active={this.state.recording}
+          onClick={() => {
+            if(this.state.username === "") alert("Preencha seu nome!");
+            else this.state.recording ? this.stopRecord() : this.startRecording();
+          }}
+          >
+          {this.state.recording ? "Parar gravação" : "Começar a gravar"}
+        </Button>
         <br />
-        <br />
-      <ReactAudioPlayer
-        src={this.state.blob}
-        controls
-      />
-      <br />
-      <br />
-      <WaveStream {...this.state.analyserData} />
-
+        <div>{this.state.error}</div>
+      </Background>
       </>
     );
   }
 }
 
-export default Recorder;
+export default RecorderStream;
